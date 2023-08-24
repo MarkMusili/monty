@@ -3,10 +3,8 @@
 void push(stack_t **stack, unsigned int line_number)
 {
     stack_t *new_node;
-    int value;
 
-    value = line_number;
-    if (value == 0)
+    if (line_number == 0)
     {
         fprintf(stderr, "L %d: missing argument for push\n", line_number);
         exit(EXIT_FAILURE);

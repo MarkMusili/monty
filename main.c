@@ -10,9 +10,10 @@ instruction_t opcodes[] =
 
 int main(int argc, char *argv[])
 {
-    int fd, i;
-    char line[100];
-    char command[10];
+    int i;
+    FILE *fd;
+    char *line;
+    char command[5];
     int value;
     
     /*Check number of arguments passed*/
@@ -22,33 +23,43 @@ int main(int argc, char *argv[])
     }
 
     /*Open the  .m file*/
-    fd = open(argv[1], O_RDONLY);
-    if (fd == -1) {
+    fd = fopen(argv[1], O_RDONLY);
+    if (fd ==  NULL) {
         perror("Error: Can't open file");
         exit(EXIT_FAILURE);
     }
 
-    while (fgets(line, sizeof(line), stdin))
+    line = malloc(sizeof(char) * BUFFER_SIZE);
+    if (line == NULL)
     {
-        
-        if (sscanf(line, "%s %d", command, &value) == 2)
+        perror("Error: malloc failed,");
+        exit(EXIT_FAILURE);
+    }
+
+    while (fgets(line, sizeof(line), fd) != NULL)
+    {    
+        if (sscanf(line, "%s %d$", command, &value) == 2)
         {
             for (i = 0; opcodes[i].opcode != NULL; i++)
             {
                 if (strcmp(command, opcodes[i].opcode) == 0)
                 {
                     opcodes[i].f(&stack, value);
+                    free(line);
+                    break;
                 }
-                else if (opcodes[i].opcode == NULL)
-                {
-                    fprintf(stderr, "L %d: unknown instruction %s\n", value, command);
-                    close(fd);
-                    exit(EXIT_FAILURE);
-                }
+            }
+            if (opcodes[i].opcode == NULL)
+            {
+                fprintf(stderr, "L %d: unknown instruction %s\n", value, command);
+                fclose(fd);
+                exit(EXIT_FAILURE);
             }
         }
         
     }
-    close(fd);
+
+    free(line);
+    fclose(fd);
     return (0);
 }
